@@ -13,8 +13,8 @@ const main = async function() {
     console.info(index, "finish");
   });
   const promisePool = new PromisePool(tasks, 2);
-  await promisePool.start();
-  console.info("all task finish");
+  let result = await promisePool.start();
+  console.info("all task finish", result);
 };
 
 main();

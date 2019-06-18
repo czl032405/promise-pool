@@ -27,6 +27,7 @@ class PromisePool {
   async start() {
     this.globalDTD = this.buildDTD();
     let finishCount = 0;
+    let results = [];
 
     for (let i in this.asyncFuncs) {
       let func = this.asyncFuncs[i];
@@ -37,13 +38,14 @@ class PromisePool {
       }
 
       this.workingThread++;
-      func().then(() => {
+      func().then(result => {
         this.workingThread--;
         finishCount++;
+        results[i] = result;
 
         // release block dtd
         if (this.workingThread < this.concurrency) {
-          this.blockDTD.resolve();
+          this.blockDTD && this.blockDTD.resolve();
         }
 
         // release global dtd
@@ -53,6 +55,7 @@ class PromisePool {
       });
     }
     await this.globalDTD.promise;
+    return results;
     console.info(1);
   }
 }
