@@ -1,0 +1,19 @@
+{
+  "name": "promise-pool-tool",
+  "version": "1.0.0",
+  "description": "Limit the concurrency when runing async functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czl032405/promise-pool.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/czl032405/promise-pool/issues"
+  },
+  "homepage": "https://github.com/czl032405/promise-pool#readme"
+}

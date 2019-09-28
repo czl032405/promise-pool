@@ -98,4 +98,4 @@ class PromisePool {
   }
 }
 
-module.exports = PromisePool;
+module.exports = { PromisePool };
