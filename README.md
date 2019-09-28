@@ -17,8 +17,3 @@ const promisePool = new PromisePool(tasks, concurrency);
 await promisePool.start();
 console.info("All Finish");
 ```
-
-## TODO
-
-- Catch Errors
-- Retry Tasks

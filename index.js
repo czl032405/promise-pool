@@ -1,12 +1,15 @@
 class PromisePool {
   asyncFuncs = [];
-  concurrency = 0;
   workingThread = 0;
+  concurrency = 10;
+  maxRetry = 5;
   blockDTD = null;
   globalDTD = null;
-  constructor(asyncFuncs, concurrency = 10) {
+
+  constructor(asyncFuncs, concurrency = 10, maxRetry = 5) {
     this.asyncFuncs = asyncFuncs;
     this.concurrency = concurrency;
+    this.maxRetry = maxRetry;
   }
 
   buildDTD() {
@@ -24,39 +27,74 @@ class PromisePool {
     };
   }
 
+  async wait(timeout = 1000) {
+    let promise = new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, timeout);
+    });
+    return await promise;
+  }
+
   async start() {
+    let promisePool = this;
     this.globalDTD = this.buildDTD();
     let finishCount = 0;
     let results = [];
 
     for (let i in this.asyncFuncs) {
       let func = this.asyncFuncs[i];
+      let retry = 0;
 
       if (this.workingThread >= this.concurrency) {
         this.blockDTD = this.buildDTD();
         await this.blockDTD.promise;
       }
 
+      let runFunc = async function() {
+        try {
+          let result = await func();
+          return result;
+        } catch (error) {
+          retry++;
+          if (retry <= promisePool.maxRetry) {
+            console.error(
+              `[PromisePool] task[${i}] Error...retry:${retry}`,
+              error
+            );
+            await promisePool.wait(1000);
+            return await runFunc();
+          } else {
+            throw error;
+            // return error;
+          }
+        }
+      };
+
       this.workingThread++;
-      func().then(result => {
-        this.workingThread--;
-        finishCount++;
-        results[i] = result;
-
-        // release block dtd
-        if (this.workingThread < this.concurrency) {
-          this.blockDTD && this.blockDTD.resolve();
+      console.info(`[PromisePool] Task[${i}] Begin`);
+      runFunc().then(
+        result => {
+          this.workingThread--;
+          finishCount++;
+          results[i] = result;
+          console.info(`[PromisePool] Task[${i}] Finish`);
+          // release block dtd
+          if (this.workingThread < this.concurrency) {
+            this.blockDTD && this.blockDTD.resolve();
+          }
+          // release global dtd
+          if (finishCount >= this.asyncFuncs.length) {
+            this.globalDTD.resolve();
+          }
+        },
+        error => {
+          this.globalDTD.reject(error);
         }
-
-        // release global dtd
-        if (finishCount >= this.asyncFuncs.length) {
-          this.globalDTD.resolve();
-        }
-      });
+      );
     }
     await this.globalDTD.promise;
     return results;
-    console.info(1);
   }
 }
 
