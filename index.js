@@ -9,7 +9,7 @@ class PromisePool {
   throwError = true;
   constructor(
     asyncFuncs,
-    { concurrency = 10, maxRetry = 5, retryWait = 1000, throwError = true }
+    { concurrency = 10, maxRetry = 5, retryWait = 1000, throwError = true } = {}
   ) {
     this.asyncFuncs = asyncFuncs;
     this.concurrency = concurrency;
