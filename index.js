@@ -5,11 +5,17 @@ class PromisePool {
   maxRetry = 5;
   blockDTD = null;
   globalDTD = null;
-
-  constructor(asyncFuncs, concurrency = 10, maxRetry = 5) {
+  retryWait = 1000;
+  throwError = true;
+  constructor(
+    asyncFuncs,
+    { concurrency = 10, maxRetry = 5, retryWait = 1000, throwError = true }
+  ) {
     this.asyncFuncs = asyncFuncs;
     this.concurrency = concurrency;
     this.maxRetry = maxRetry;
+    this.retryWait = retryWait;
+    this.throwError = throwError;
   }
 
   buildDTD() {
@@ -62,7 +68,7 @@ class PromisePool {
               `[PromisePool] task[${i}] Error...retry:${retry}`,
               error
             );
-            await promisePool.wait(1000);
+            await promisePool.wait(promisePool.retryWait);
             return await runFunc();
           } else {
             throw error;
@@ -89,7 +95,11 @@ class PromisePool {
           }
         },
         error => {
-          this.globalDTD.reject(error);
+          if (this.throwError) {
+            this.globalDTD.reject(error);
+          } else {
+            results[i] = error;
+          }
         }
       );
     }

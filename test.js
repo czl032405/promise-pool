@@ -16,7 +16,7 @@ const main = async function() {
     }
     return index;
   });
-  const promisePool = new PromisePool(tasks, 2);
+  const promisePool = new PromisePool(tasks, { concurrency: 2 });
   let result = await promisePool.start();
   console.info("all task finish", result);
 };
