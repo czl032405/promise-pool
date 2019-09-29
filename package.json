@@ -1,6 +1,6 @@
 {
   "name": "promise-pool-tool",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Limit the concurrency when runing async functions",
   "main": "index.js",
   "scripts": {
