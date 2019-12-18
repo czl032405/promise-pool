@@ -1,4 +1,4 @@
-const { PromisePool } = require("./index");
+const { PromisePool } = require("./dist/index");
 const wait = async function() {
   return new Promise(resolve => {
     setTimeout(() => {

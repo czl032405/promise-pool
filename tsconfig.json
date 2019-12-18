@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "ESNext",
+    "module": "commonjs",
+    "declaration": true
+  },
+  "include": ["src/*"],
+  "exclude": ["node_modules"]
+}
