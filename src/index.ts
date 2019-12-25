@@ -101,7 +101,15 @@ class PromisePool<T> {
           if (this.throwError) {
             this.globalDTD.reject(error);
           } else {
-            results[i] = error;
+            results[i] = undefined;
+            // release block dtd
+            if (this.workingThread < this.concurrency) {
+              this.blockDTD && this.blockDTD.resolve();
+            }
+            // release global dtd
+            if (finishCount >= this.asyncFuncs.length) {
+              this.globalDTD.resolve();
+            }
           }
         }
       );
