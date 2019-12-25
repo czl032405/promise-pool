@@ -80,36 +80,34 @@ class PromisePool<T> {
         }
       };
 
+      let markFinish = (result: T) => {
+        this.workingThread--;
+        finishCount++;
+        results[i] = result;
+        console.info(`[PromisePool] Task[${i}] Finish`);
+        // release block dtd
+        if (this.workingThread < this.concurrency) {
+          this.blockDTD && this.blockDTD.resolve();
+        }
+        // release global dtd
+        if (finishCount >= this.asyncFuncs.length) {
+          this.globalDTD.resolve();
+        }
+      };
+
       this.workingThread++;
       console.info(`[PromisePool] Task[${i}] Begin`);
       runFunc().then(
         result => {
-          this.workingThread--;
-          finishCount++;
-          results[i] = result;
+          markFinish(result);
           console.info(`[PromisePool] Task[${i}] Finish`);
-          // release block dtd
-          if (this.workingThread < this.concurrency) {
-            this.blockDTD && this.blockDTD.resolve();
-          }
-          // release global dtd
-          if (finishCount >= this.asyncFuncs.length) {
-            this.globalDTD.resolve();
-          }
         },
         error => {
           if (this.throwError) {
             this.globalDTD.reject(error);
           } else {
-            results[i] = undefined;
-            // release block dtd
-            if (this.workingThread < this.concurrency) {
-              this.blockDTD && this.blockDTD.resolve();
-            }
-            // release global dtd
-            if (finishCount >= this.asyncFuncs.length) {
-              this.globalDTD.resolve();
-            }
+            markFinish(undefined);
+            console.info(`[PromisePool] Task[${i}] Error`);
           }
         }
       );

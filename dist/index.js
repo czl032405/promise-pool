@@ -69,9 +69,7 @@ class PromisePool {
                     }
                 }
             };
-            this.workingThread++;
-            console.info(`[PromisePool] Task[${i}] Begin`);
-            runFunc().then(result => {
+            let markFinish = (result) => {
                 this.workingThread--;
                 finishCount++;
                 results[i] = result;
@@ -84,20 +82,19 @@ class PromisePool {
                 if (finishCount >= this.asyncFuncs.length) {
                     this.globalDTD.resolve();
                 }
+            };
+            this.workingThread++;
+            console.info(`[PromisePool] Task[${i}] Begin`);
+            runFunc().then(result => {
+                markFinish(result);
+                console.info(`[PromisePool] Task[${i}] Finish`);
             }, error => {
                 if (this.throwError) {
                     this.globalDTD.reject(error);
                 }
                 else {
-                    results[i] = undefined;
-                    // release block dtd
-                    if (this.workingThread < this.concurrency) {
-                        this.blockDTD && this.blockDTD.resolve();
-                    }
-                    // release global dtd
-                    if (finishCount >= this.asyncFuncs.length) {
-                        this.globalDTD.resolve();
-                    }
+                    markFinish(undefined);
+                    console.info(`[PromisePool] Task[${i}] Error`);
                 }
             });
         }

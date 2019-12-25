@@ -23,11 +23,15 @@ const main = async function() {
 
   console.info("test 2");
   const tasks2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(index => async () => {
+    if (index == 1) {
+      return index;
+    }
     throw "100% Error";
   });
   const promisePool2 = new PromisePool(tasks2, {
-    concurrency: 2,
-    throwError: false
+    concurrency: 5,
+    throwError: false,
+    maxRetry: 1
   });
   let result2 = await promisePool2.start();
   console.info("all task finish", result2);
