@@ -3,24 +3,32 @@
  * @author czl
  */
 class PromisePool<T> {
-  asyncFuncs: (() => Promise<T>)[] = [];
-  workingThread: number = 0;
-  concurrency: number = 10;
-  maxRetry: number = 5;
-  retryWait: number = 1000;
-  throwError: boolean = true;
-  blockDTD: DTD<T> = null;
-  globalDTD: DTD<T> = null;
+  private workingThread: number = 0;
+  private blockDTD: DTD<T> = null;
+  private globalDTD: DTD<T> = null;
 
   constructor(
-    asyncFuncs: (() => Promise<T>)[] = [],
-    { concurrency = 10, maxRetry = 5, retryWait = 1000, throwError = true } = {}
+    private readonly asyncFuncs: (() => Promise<T>)[] = [],
+    private readonly options: {
+      concurrency?: number;
+      maxRetry?: number;
+      retryWait?: number;
+      debug?: boolean;
+      onProgress?: (index: number, result: T, error: Error) => void;
+      onProgressRetry?: (index: number, retry: number, error: Error) => void;
+      onFinish?: (results: T[], errors: Error[]) => void;
+    } = {}
   ) {
-    this.asyncFuncs = asyncFuncs;
-    this.concurrency = concurrency;
-    this.maxRetry = maxRetry;
-    this.retryWait = retryWait;
-    this.throwError = throwError;
+    const defaultOptions = {
+      concurrency: 10,
+      maxRetry: 5,
+      retryWait: 1000,
+      debug: false,
+      onProgress: (index: number, result: T, error: Error) => {},
+      onProgressRetry: (index: number, retry: number, error: Error) => {},
+      onFinish: (results: T[], errors: Error[]) => {}
+    };
+    this.options = Object.assign(defaultOptions, this.options);
   }
 
   buildDTD<T>(): DTD<T> {
@@ -50,43 +58,49 @@ class PromisePool<T> {
     let promisePool = this;
     let finishCount = 0;
     let results: T[] = [];
+    let errors: Error[] = [];
+    if (this.asyncFuncs.length == 0) {
+      return results;
+    }
     this.globalDTD = this.buildDTD<null>();
 
     for (let i in this.asyncFuncs) {
       let func = this.asyncFuncs[i];
       let retry = 0;
 
-      if (this.workingThread >= this.concurrency) {
+      if (this.workingThread >= this.options.concurrency) {
         this.blockDTD = this.buildDTD();
         await this.blockDTD.promise;
       }
 
       let runFunc = async function(): Promise<T> {
         try {
+          promisePool.options.debug && console.info(`[PromisePool] Task[${i}] Begin`);
           let result = await func();
+          promisePool.options.onProgress(+i, result, undefined);
+          promisePool.options.debug && console.info(`[PromisePool] Task[${i}] Finish`);
           return result;
         } catch (error) {
           retry++;
-          if (retry <= promisePool.maxRetry) {
-            console.error(
-              `[PromisePool] task[${i}] Error...retry:${retry}`,
-              error
-            );
-            await promisePool.wait(promisePool.retryWait);
+          if (retry <= promisePool.options.maxRetry) {
+            promisePool.options.debug && console.error(`[PromisePool] task[${i}] Error...retry:${retry}`, error);
+            await promisePool.wait(promisePool.options.retryWait);
             return await runFunc();
           } else {
+            promisePool.options.onProgress(+i, undefined, error);
+            promisePool.options.debug && console.info(`[PromisePool] Task[${i}] Error`, error);
             throw error;
           }
         }
       };
 
-      let markFinish = (result: T) => {
+      let markFinish = (result: T, error: Error) => {
         this.workingThread--;
         finishCount++;
         results[i] = result;
-        console.info(`[PromisePool] Task[${i}] Finish`);
+        errors[i] = error;
         // release block dtd
-        if (this.workingThread < this.concurrency) {
+        if (this.workingThread < this.options.concurrency) {
           this.blockDTD && this.blockDTD.resolve();
         }
         // release global dtd
@@ -96,23 +110,19 @@ class PromisePool<T> {
       };
 
       this.workingThread++;
-      console.info(`[PromisePool] Task[${i}] Begin`);
+
       runFunc().then(
         result => {
-          markFinish(result);
-          console.info(`[PromisePool] Task[${i}] Finish`);
+          markFinish(result, undefined);
         },
         error => {
-          if (this.throwError) {
-            this.globalDTD.reject(error);
-          } else {
-            markFinish(undefined);
-            console.info(`[PromisePool] Task[${i}] Error`);
-          }
+          markFinish(undefined, error);
         }
       );
     }
+
     await this.globalDTD.promise;
+    promisePool.options.onFinish(results, errors);
     return results;
   }
 }

@@ -13,24 +13,24 @@ Limit the concurrency when runing async functions
 - retryWait
   Timeout(millseconds) when retry the task
   Default: 1000
-- throwError
-  Whether to throw an error when one of the task fail
-  Default: true
+- onProgress: (index: number, result: T, error: Error) => void
+  Event on a Task Finished
+- onFinish: (results: T[], errors: Error[]) => void
+  Event on all Tasks Finished
 
 ## USAGE
 
 ```javascript
 const { PromisePool } = require("./promise-pool-tool");
-const concurrency = 2;
+const options = { concurrency: 2 };
 const tasks = [
+  //
   async function() {},
   async function() {},
   async function() {},
   async function() {}
 ];
-const promisePool = new PromisePool(tasks, {
-  concurrency
-});
-await promisePool.start();
+const promisePool = new PromisePool(tasks, options);
+const results = await promisePool.start();
 console.info("All Finish");
 ```

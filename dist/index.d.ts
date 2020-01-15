@@ -3,19 +3,19 @@
  * @author czl
  */
 declare class PromisePool<T> {
-    asyncFuncs: (() => Promise<T>)[];
-    workingThread: number;
-    concurrency: number;
-    maxRetry: number;
-    retryWait: number;
-    throwError: boolean;
-    blockDTD: DTD<T>;
-    globalDTD: DTD<T>;
-    constructor(asyncFuncs?: (() => Promise<T>)[], { concurrency, maxRetry, retryWait, throwError }?: {
+    private readonly asyncFuncs;
+    private readonly options;
+    private workingThread;
+    private blockDTD;
+    private globalDTD;
+    constructor(asyncFuncs?: (() => Promise<T>)[], options?: {
         concurrency?: number;
         maxRetry?: number;
         retryWait?: number;
-        throwError?: boolean;
+        debug?: boolean;
+        onProgress?: (index: number, result: T, error: Error) => void;
+        onProgressRetry?: (index: number, retry: number, error: Error) => void;
+        onFinish?: (results: T[], errors: Error[]) => void;
     });
     buildDTD<T>(): DTD<T>;
     wait(timeout?: number): Promise<null>;
