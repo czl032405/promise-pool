@@ -83,6 +83,7 @@ class PromisePool<T> {
         } catch (error) {
           retry++;
           if (retry <= promisePool.options.maxRetry) {
+            promisePool.options.onProgressRetry(+i, retry, error);
             promisePool.options.debug && console.error(`[PromisePool] task[${i}] Error...retry:${retry}`, error);
             await promisePool.wait(promisePool.options.retryWait);
             return await runFunc();
