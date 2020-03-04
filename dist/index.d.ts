@@ -1,3 +1,4 @@
 import { PromisePool } from "./PromisePool";
 import { PromiseQueue } from "./PromiseQueue";
-export { PromisePool, PromiseQueue };
+import { GlobalAsyncFunction } from "./GlobalAsyncFunction";
+export { PromisePool, PromiseQueue, GlobalAsyncFunction };

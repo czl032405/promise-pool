@@ -1,4 +1,4 @@
-import { DTD } from "./iDTD";
+import { DTD } from "./DTD";
 
 /**
  * Limit the concurrency when runing async functions
@@ -71,14 +71,14 @@ class PromisePool<T> {
 
     let isArray = asyncFuncs instanceof Array;
     let asyncFuncsCount = isArray ? asyncFuncs.length : 1;
+    let dtds = Array.from({ length: asyncFuncsCount }).map(() => this.buildDTD<T>());
     this.asyncFuncs = this.asyncFuncs.concat(asyncFuncs);
     this.asyncFuncsCount = this.asyncFuncsCount + asyncFuncsCount;
-    let dtds = Array.from({ length: asyncFuncsCount }).map(() => this.buildDTD<T>());
     this.asyncFuncsDTDs = this.asyncFuncsDTDs.concat(dtds);
-
     if (!this.isWorking) {
       this.start();
     }
+
     let result = await Promise.all(dtds.map(dtd => dtd.promise));
     return isArray ? result : result[0];
   }
@@ -92,6 +92,8 @@ class PromisePool<T> {
     let errors: Error[] = [];
     let resultDTD = this.buildDTD<null>();
     let blockDTD: DTD<null> = null;
+
+    debug && console.info("[PromisePool] Start");
 
     if (this.isWorking) {
       throw new Error("Async Tasks is already running");
@@ -107,7 +109,6 @@ class PromisePool<T> {
       let func = this.asyncFuncs.splice(0, 1)[0];
       let funcDTD = this.asyncFuncsDTDs.splice(0, 1)[0];
       let retry = 0;
-
       if (workingCount >= concurrency) {
         blockDTD = this.buildDTD();
         await blockDTD.promise;
@@ -164,8 +165,9 @@ class PromisePool<T> {
           markFinish(undefined, error);
         }
       );
-    }
 
+      await this.wait(0); // check if there are any pending tasks to push
+    }
     await resultDTD.promise;
     onFinish(results, errors);
     this.isWorking = false;

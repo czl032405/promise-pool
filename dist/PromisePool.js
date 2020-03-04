@@ -52,9 +52,9 @@ class PromisePool {
         }
         let isArray = asyncFuncs instanceof Array;
         let asyncFuncsCount = isArray ? asyncFuncs.length : 1;
+        let dtds = Array.from({ length: asyncFuncsCount }).map(() => this.buildDTD());
         this.asyncFuncs = this.asyncFuncs.concat(asyncFuncs);
         this.asyncFuncsCount = this.asyncFuncsCount + asyncFuncsCount;
-        let dtds = Array.from({ length: asyncFuncsCount }).map(() => this.buildDTD());
         this.asyncFuncsDTDs = this.asyncFuncsDTDs.concat(dtds);
         if (!this.isWorking) {
             this.start();
@@ -71,6 +71,7 @@ class PromisePool {
         let errors = [];
         let resultDTD = this.buildDTD();
         let blockDTD = null;
+        debug && console.info("[PromisePool] Start");
         if (this.isWorking) {
             throw new Error("Async Tasks is already running");
         }
@@ -134,6 +135,7 @@ class PromisePool {
             }, error => {
                 markFinish(undefined, error);
             });
+            await this.wait(0); // check if there are any pending tasks to push
         }
         await resultDTD.promise;
         onFinish(results, errors);

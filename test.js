@@ -1,9 +1,9 @@
-const { PromisePool, PromiseQueue } = require("./dist/index");
-const wait = async function() {
+const { PromisePool, PromiseQueue, GlobalAsyncFunction } = require("./dist/index");
+const wait = async function(timeout) {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve();
-    }, 5);
+    }, timeout || 5);
   });
 };
 const main = async function() {
@@ -68,6 +68,46 @@ const main = async function() {
 
   let extraResult3 = await promisePool3.push(extraTasks);
   console.info(`Extra After All Finished result`, extraResult3);
+
+  // Promise Queue
+  console.info(`\r\n[PromiseQueue Test 1]`);
+  let promiseQueue = new PromiseQueue();
+  let quantity = 5;
+  Array.from({ length: 10 }).map(async (unknow, index) => {
+    setTimeout(() => {
+      promiseQueue.push(async function() {
+        await wait(1);
+        if (quantity > 0) {
+          quantity--;
+          console.info(`[PromiseQueue Test 1] ${index} Buy Success`);
+        } else {
+          console.info(`[PromiseQueue Test 1] ${index} Sold Out`);
+        }
+      });
+    }, Math.floor(Math.random() * 100));
+  });
+
+  // GlobalAsyncFunction
+  await wait(1000);
+  console.info(`\r\n[GlobalAsyncFunction Test 1]`);
+  let globalAsyncFunction = new GlobalAsyncFunction("sampleKey", async function() {
+    await wait(2000);
+    return Math.random();
+  });
+
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  globalAsyncFunction().then(console.info);
+  GlobalAsyncFunction.get("sampleKey")().then(console.info);
+  GlobalAsyncFunction.get("sampleKey")().then(console.info);
+  GlobalAsyncFunction.get("sampleKey")().then(console.info);
+  GlobalAsyncFunction.get("sampleKey")().then(console.info);
+  GlobalAsyncFunction.get("sampleKey")().then(console.info);
 };
 
 main();

@@ -4,3 +4,5 @@ const PromisePool_1 = require("./PromisePool");
 exports.PromisePool = PromisePool_1.PromisePool;
 const PromiseQueue_1 = require("./PromiseQueue");
 exports.PromiseQueue = PromiseQueue_1.PromiseQueue;
+const GlobalAsyncFunction_1 = require("./GlobalAsyncFunction");
+exports.GlobalAsyncFunction = GlobalAsyncFunction_1.GlobalAsyncFunction;
