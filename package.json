@@ -4,6 +4,7 @@
   "description": "Limit the concurrency when runing async functions",
   "main": "dist/index.js",
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc",
     "test": "tsc && node test"
   },

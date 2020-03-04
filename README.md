@@ -1,8 +1,10 @@
-# Promise Pool
+# Promise Pool Tool
 
-Limit the concurrency when runing async functions
+## Promise Pool
 
-## OPTIONS
+Run async functions in Limit Concurrency Number.
+
+### OPTIONS
 
 - concurrency
   Max thread when runing async functions
@@ -18,7 +20,7 @@ Limit the concurrency when runing async functions
 - onFinish: (results: T[], errors: Error[]) => void
   Event on all Tasks Finished
 
-## USAGE
+### USAGE
 
 ```javascript
 const { PromisePool } = require("./promise-pool-tool");
@@ -34,3 +36,19 @@ const promisePool = new PromisePool(tasks, options);
 const results = await promisePool.start();
 console.info("All Finish");
 ```
+
+## Promise Queue
+
+Run async functions in a Queue.
+
+### OPTIONS
+
+### USAGE
+
+## Global Async Function
+
+Create an async function that returning the same Promise before resolved.
+
+### OPTIONS
+
+### USAGE
