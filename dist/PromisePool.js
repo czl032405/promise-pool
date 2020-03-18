@@ -98,6 +98,7 @@ class PromisePool {
                     return result;
                 }
                 catch (error) {
+                    console.error(error);
                     retry++;
                     if (retry <= maxRetry) {
                         onProgressRetry(i, retry, error);

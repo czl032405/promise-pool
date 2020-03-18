@@ -122,6 +122,7 @@ class PromisePool<T> {
           debug && console.info(`[PromisePool] Task[${i}] Finish`);
           return result;
         } catch (error) {
+          console.error(error);
           retry++;
           if (retry <= maxRetry) {
             onProgressRetry(i, retry, error);
