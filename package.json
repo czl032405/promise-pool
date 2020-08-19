@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/czl032405/promise-pool.git"
+    "url": "git+https://github.com/czl032405/promise-pool-tool.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/czl032405/promise-pool/issues"
+    "url": "https://github.com/czl032405/promise-pool-tool/issues"
   },
-  "homepage": "https://github.com/czl032405/promise-pool#readme",
+  "homepage": "https://github.com/czl032405/promise-pool-tool#readme",
   "devDependencies": {
     "typescript": "^3.7.3"
   }
