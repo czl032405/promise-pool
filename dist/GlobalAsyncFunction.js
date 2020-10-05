@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GlobalAsyncFunction = void 0;
 const DTDMap = {};
 function GlobalAsyncFunction(key, asyncFunc) {
     const func = async function () {
@@ -9,8 +10,8 @@ function GlobalAsyncFunction(key, asyncFunc) {
         let dtd = buildDTD();
         DTDMap[key].dtd = dtd;
         asyncFunc()
-            .then(result => dtd.resolve(result))
-            .catch(error => dtd.reject(error));
+            .then((result) => dtd.resolve(result))
+            .catch((error) => dtd.reject(error));
         let result = await dtd.promise;
         delete DTDMap[key].dtd;
         return result;
@@ -26,7 +27,7 @@ GlobalAsyncFunction.get = function (key) {
     }
     return func;
 };
-GlobalAsyncFunction.delete = function (key) {
+GlobalAsyncFunction.remove = function (key) {
     delete DTDMap[key];
 };
 const buildDTD = function () {
@@ -38,6 +39,6 @@ const buildDTD = function () {
     return {
         resolve,
         reject,
-        promise
+        promise,
     };
 };
